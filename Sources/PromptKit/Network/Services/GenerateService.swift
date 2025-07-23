@@ -11,12 +11,12 @@ protocol GenerateServiceProtocol {
     func fetchTextMessage(
         rules: String,
         prompt: String,
-        completion: @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     )
     func fetchImageAnalyze(
         rules: String,
         imageData: Data,
-        completion: @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     )
 }
 
@@ -32,7 +32,7 @@ extension GenerateService: GenerateServiceProtocol {
     func fetchTextMessage(
         rules: String,
         prompt: String,
-        completion: @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     ) {
         let request = Endpoint.prepareRequestURL(.textGeneratorGPT(rules, prompt))
         
@@ -51,7 +51,7 @@ extension GenerateService: GenerateServiceProtocol {
     func fetchImageAnalyze(
         rules: String,
         imageData: Data,
-        completion: @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     ) {
         let imageDataBase64 = imageData.base64EncodedString()
         let request = Endpoint.prepareRequestURL(.imageAnalyzerGPT(rules, imageDataBase64))

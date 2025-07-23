@@ -8,17 +8,48 @@
 import Foundation
 
 protocol NetworkManagerProtocol {
-    func sendRequest<T>(
+    func sendRequest<T: Codable & Sendable>(
         request: URLRequest,
         T: T.Type,
-        completion: @escaping (Result<T, NetworkError>) -> Void
-    ) where T : Decodable, T : Encodable
+        completion: @Sendable @escaping (Result<T, NetworkError>) -> Void
+    )
 }
+
 
 class NetworkManager {
     private let session: URLSession
     
     init(session: URLSession = .init(configuration: .default)) {
         self.session = session
+    }
+}
+
+extension NetworkManager: NetworkManagerProtocol {
+    func sendRequest<T: Codable & Sendable>(
+        request: URLRequest,
+        T: T.Type,
+        completion: @Sendable @escaping (Result<T, NetworkError>) -> Void
+    ){
+        session.dataTask(with: request) { data, httpResponse, error in
+            guard error == nil else {
+                return completion(.failure(.requestFailedError))
+            }
+            
+            if let httpResponse = httpResponse as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+                return completion(.failure(.statusCodeError(httpResponse.statusCode)))
+            }
+            
+            guard let data = data else {
+                return completion(.failure(.noDataError))
+            }
+            
+            do {
+                let responseData = try JSONDecoder().decode(T.self, from: data)
+                completion(.success(responseData))
+            } catch {
+                completion(.failure(.decodingFailedError))
+            }
+        }
+        .resume()
     }
 }
