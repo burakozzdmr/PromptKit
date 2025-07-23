@@ -17,8 +17,8 @@ protocol EndpointProtocol {
 }
 
 enum Endpoint {
-    case textGeneratorGPT(String, String, String)
-    case imageAnalyzerGPT(String, String, String)
+    case textGeneratorGPT(String, String)
+    case imageAnalyzerGPT(String, String)
 }
 
 extension Endpoint: EndpointProtocol {
@@ -56,22 +56,22 @@ extension Endpoint: EndpointProtocol {
         request.allHTTPHeaderFields = endpoint.headers
         
         switch endpoint {
-        case .textGeneratorGPT(let rules, let prompt, let apiKey):
-            let requestModel = GPTTextRequestModel(
+        case .textGeneratorGPT(let rules, let prompt):
+            let requestModel = GPTAnalyzeRequestModel(
                 model: "gpt-3.5-turbo",
                 messages: [
-                    TextModel(role: "system", content: rules),
-                    TextModel(role: "user", content: prompt)
+                    AnalyzeModel(role: "system", content: rules),
+                    AnalyzeModel(role: "user", content: prompt)
                 ]
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
             return .success(request)
-        case .imageAnalyzerGPT(let rules, let prompt, let apiKey):
-            let requestModel = GPTTextRequestModel(
+        case .imageAnalyzerGPT(let rules, let imageData):
+            let requestModel = GPTAnalyzeRequestModel(
                 model: "gpt-3.5-turbo",
                 messages: [
-                    TextModel(role: "system", content: rules),
-                    TextModel(role: "user", content: prompt)
+                    AnalyzeModel(role: "system", content: rules),
+                    AnalyzeModel(role: "user", content: imageData)
                 ]
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)

@@ -7,12 +7,12 @@
 
 import Foundation
 
-struct GPTTextRequestModel: Codable {
+struct GPTAnalyzeRequestModel: Codable {
     let model: String
-    let messages: [TextModel]
+    let messages: [AnalyzeModel]
 }
 
-struct TextModel: Codable {
+struct AnalyzeModel: Codable {
     let role: String
     let content: String
 }

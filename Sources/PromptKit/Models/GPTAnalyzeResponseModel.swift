@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GPTTextResponseModel: Codable {
+struct GPTAnalyzeResponseModel: Codable {
     struct Choice: Codable {
         struct Message: Codable {
             let content: String
