@@ -34,7 +34,7 @@ extension GenerateService: GenerateServiceProtocol {
         prompt: String,
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     ) {
-        let request = Endpoint.prepareRequestURL(.textGeneratorGPT(rules, prompt))
+        let request = GenerateType.prepareRequestURL(.textGeneratorGPT(rules, prompt))
         
         switch request {
         case .success(let textRequest):
@@ -54,7 +54,7 @@ extension GenerateService: GenerateServiceProtocol {
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     ) {
         let imageDataBase64 = imageData.base64EncodedString()
-        let request = Endpoint.prepareRequestURL(.imageAnalyzerGPT(rules, imageDataBase64))
+        let request = GenerateType.prepareRequestURL(.imageAnalyzerGPT(rules, imageDataBase64))
         
         switch request {
         case .success(let imageRequest):

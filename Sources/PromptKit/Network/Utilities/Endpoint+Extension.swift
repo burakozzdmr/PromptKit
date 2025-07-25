@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol EndpointProtocol {
+protocol GenerateProtocol {
     var baseURL: String { get }
     var path: String { get }
     var method: HTTPMethod { get }
@@ -16,12 +16,12 @@ protocol EndpointProtocol {
     static func prepareRequestURL(_ endpoint: Self) -> Result<URLRequest, NetworkError>
 }
 
-enum Endpoint {
+enum GenerateType {
     case textGeneratorGPT(String, String)
     case imageAnalyzerGPT(String, String)
 }
 
-extension Endpoint: EndpointProtocol {
+extension GenerateType: GenerateProtocol {
     var baseURL: String {
         return NetworkConstants.gptBaseURL
     }
@@ -45,7 +45,7 @@ extension Endpoint: EndpointProtocol {
         return nil
     }
     
-    static func prepareRequestURL(_ endpoint: Endpoint) -> Result<URLRequest, NetworkError> {
+    static func prepareRequestURL(_ endpoint: GenerateType) -> Result<URLRequest, NetworkError> {
         guard let urlComponents = URLComponents(string: endpoint.baseURL + endpoint.path),
               let requestURL = urlComponents.url else {
             return .failure(.invalidURL)
