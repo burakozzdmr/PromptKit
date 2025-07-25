@@ -42,8 +42,8 @@ public class TextGenerator {
     }
     
     func fetchGeneratedText(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
-        prepareGeneratedData { result in
-            completion(result)
+        prepareGeneratedData { generatedTextResult in
+            completion(generatedTextResult)
         }
     }
 }
