@@ -14,5 +14,5 @@ struct GPTAnalyzeRequestModel: Codable {
 
 struct AnalyzeModel: Codable {
     let role: String
-    let content: String
+    let content: String?
 }
