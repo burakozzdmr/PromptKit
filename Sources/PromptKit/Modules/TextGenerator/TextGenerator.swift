@@ -7,7 +7,7 @@
  
 import Foundation
 
-public class TextGenerator {
+internal class TextGenerator {
     private let promptRules: String?
     private let prompt: String
     private let apiKey: String

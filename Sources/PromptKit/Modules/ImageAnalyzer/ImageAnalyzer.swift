@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class ImageAnalyzer {
+internal class ImageAnalyzer {
     private let promptRules: String
     private let imageData: Data
     private let apiKey: String
