@@ -7,21 +7,19 @@
 
 import Foundation
 
-protocol GenerateProtocol {
+protocol EndpointProtocol {
     var baseURL: String { get }
     var path: String { get }
     var method: HTTPMethod { get }
-    var headers: [String: String]? { get }
-    var parameters: [String: Any]? { get }
     static func prepareRequestURL(_ endpoint: Self) -> Result<URLRequest, NetworkError>
 }
 
-enum GenerateType {
-    case textGeneratorGPT(String, String)
-    case imageAnalyzerGPT(String, String)
+enum EndpointType {
+    case textGeneratorGPT(promptRules: String?, prompt: String, apiKey: String)
+    case imageAnalyzerGPT(promptRules: String?, imageData: String, apiKey: String)
 }
 
-extension GenerateType: GenerateProtocol {
+extension EndpointType: EndpointProtocol {
     var baseURL: String {
         return NetworkConstants.gptBaseURL
     }
@@ -34,29 +32,19 @@ extension GenerateType: GenerateProtocol {
         return .POST
     }
     
-    var headers: [String : String]? {
-        return [
-            "Authorization": "Bearer \("API_KEY")",
-            "Content-Type": "application/json"
-        ]
-    }
-    
-    var parameters: [String : Any]? {
-        return nil
-    }
-    
-    static func prepareRequestURL(_ endpoint: GenerateType) -> Result<URLRequest, NetworkError> {
+    static func prepareRequestURL(_ endpoint: EndpointType) -> Result<URLRequest, NetworkError> {
         guard let urlComponents = URLComponents(string: endpoint.baseURL + endpoint.path),
               let requestURL = urlComponents.url else {
             return .failure(.invalidURL)
         }
         
-        var request: URLRequest = .init(url: requestURL)
-        request.httpMethod = endpoint.method.rawValue
-        request.allHTTPHeaderFields = endpoint.headers
-        
         switch endpoint {
-        case .textGeneratorGPT(let rules, let prompt):
+        case .textGeneratorGPT(let rules, let prompt, let apiKey):
+            var request: URLRequest = .init(url: requestURL)
+            request.httpMethod = endpoint.method.rawValue
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
             let requestModel = GPTAnalyzeRequestModel(
                 model: "gpt-3.5-turbo",
                 messages: [
@@ -66,7 +54,13 @@ extension GenerateType: GenerateProtocol {
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
             return .success(request)
-        case .imageAnalyzerGPT(let rules, let imageData):
+            
+        case .imageAnalyzerGPT(let rules, let imageData, let apiKey):
+            var request: URLRequest = .init(url: requestURL)
+            request.httpMethod = endpoint.method.rawValue
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
             let requestModel = GPTAnalyzeRequestModel(
                 model: "gpt-3.5-turbo",
                 messages: [
