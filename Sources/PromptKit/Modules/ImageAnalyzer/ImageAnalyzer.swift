@@ -7,14 +7,14 @@
 
 import Foundation
 
-internal class ImageAnalyzer {
+public class ImageAnalyzer {
     private let promptRules: String
     private let imageData: Data
     private let apiKey: String
     private let generateType: TextGenerateType
     private let generateService: GenerateServiceProtocol
     
-    init(
+    public init(
         promptRules: String,
         imageData: Data,
         apiKey: String,
@@ -44,7 +44,7 @@ internal class ImageAnalyzer {
         }
     }
     
-    func fetchImageAnalyzeData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
+    public func fetchImageAnalyzeData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
         prepareImageAnalyzerData { imageAnalyzeResult in
             completion(imageAnalyzeResult)
         }

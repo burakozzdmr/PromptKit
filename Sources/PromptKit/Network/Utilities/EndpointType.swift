@@ -7,19 +7,19 @@
 
 import Foundation
 
-protocol EndpointProtocol {
+public protocol EndpointProtocol {
     var baseURL: String { get }
     var path: String { get }
     var method: HTTPMethod { get }
     static func prepareRequestURL(_ endpoint: Self) -> Result<URLRequest, NetworkError>
 }
 
-enum EndpointType {
+public enum EndpointType {
     case textGeneratorGPT(promptRules: String?, prompt: String, apiKey: String)
     case imageAnalyzerGPT(promptRules: String?, imageData: String, apiKey: String)
 }
 
-extension EndpointType: EndpointProtocol {
+public extension EndpointType {
     var baseURL: String {
         return NetworkConstants.gptBaseURL
     }

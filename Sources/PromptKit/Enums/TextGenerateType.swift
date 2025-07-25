@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum TextGenerateType {
+public enum TextGenerateType {
     case textGeneratorGPT
     case imageAnalyzerGPT
 }

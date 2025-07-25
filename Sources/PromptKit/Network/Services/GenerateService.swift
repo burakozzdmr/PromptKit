@@ -24,10 +24,10 @@ protocol GenerateServiceProtocol {
     )
 }
 
-class GenerateService {
+public class GenerateService {
     private let networkManager: NetworkManagerProtocol
     
-    init(networkManager: NetworkManager = .init()) {
+    public init(networkManager: NetworkManager = .init()) {
         self.networkManager = networkManager
     }
 }

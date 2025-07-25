@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct NetworkConstants {
-    static let gptBaseURL = "https://api.openai.com/v1/"
-    static let completionsPath = "chat/completions"
+public struct NetworkConstants {
+    public static let gptBaseURL = "https://api.openai.com/v1/"
+    public static let completionsPath = "chat/completions"
 }

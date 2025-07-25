@@ -7,6 +7,6 @@
 
 import Foundation
 
-enum ImageGenerateType {
+public enum ImageGenerateType {
     case imageGeneratorGPT
 }

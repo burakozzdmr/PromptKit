@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct GPTAnalyzeResponseModel: Codable {
-    struct Choice: Codable {
-        struct Message: Codable {
-            let content: String
+public struct GPTAnalyzeResponseModel: Codable, Sendable {
+    public struct Choice: Codable, Sendable {
+        public struct Message: Codable, Sendable {
+             let content: String
         }
-        let message: Message
+        public let message: Message
     }
 
-    let choices: [Choice]
+    public let choices: [Choice]
 }

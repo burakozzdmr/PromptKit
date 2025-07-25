@@ -7,14 +7,14 @@
  
 import Foundation
 
-internal class TextGenerator {
+public class TextGenerator {
     private let promptRules: String?
     private let prompt: String
     private let apiKey: String
     private let generateType: TextGenerateType
     private let generateService: GenerateServiceProtocol
     
-    init(
+    public init(
         promptRules: String? = "",
         prompt: String,
         apiKey: String,
@@ -41,9 +41,10 @@ internal class TextGenerator {
         }
     }
     
-    func fetchGeneratedText(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
+    public func fetchGeneratedText(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
         prepareGeneratedData { generatedTextResult in
             completion(generatedTextResult)
         }
     }
 }
+

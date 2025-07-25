@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkError: Error {
+public enum NetworkError: Error {
     case invalidURL
     case requestFailedError
     case requestTimedOutError
@@ -17,7 +17,7 @@ enum NetworkError: Error {
     case decodingFailedError
     case generalError(Error)
     
-    var errorMessage: String {
+    public var errorMessage: String {
         switch self {
         case .invalidURL:
             return "Invalid URL"

@@ -16,10 +16,10 @@ protocol NetworkManagerProtocol {
 }
 
 
-class NetworkManager {
+public class NetworkManager {
     private let session: URLSession
     
-    init(session: URLSession = .init(configuration: .default)) {
+    public init(session: URLSession = .init(configuration: .default)) {
         self.session = session
     }
 }
