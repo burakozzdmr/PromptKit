@@ -9,5 +9,4 @@ import Foundation
 
 public enum TextGenerateType {
     case textGeneratorGPT
-    case imageAnalyzerGPT
 }

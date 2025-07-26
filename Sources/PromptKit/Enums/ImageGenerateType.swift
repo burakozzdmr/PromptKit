@@ -9,4 +9,5 @@ import Foundation
 
 public enum ImageGenerateType {
     case imageGeneratorGPT
+    case imageAnalyzerGPT
 }

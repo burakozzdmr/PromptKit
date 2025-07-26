@@ -63,7 +63,7 @@ extension GenerateService: GenerateServiceProtocol {
         apiKey: String,
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     ) {
-        if generateType == .imageAnalyzerGPT {
+        if generateType == .textGeneratorGPT {
             let imageDataBase64 = imageData.base64EncodedString()
             let request = EndpointType.prepareRequestURL(.imageAnalyzerGPT(promptRules: rules, imageData: imageDataBase64, apiKey: apiKey))
             
