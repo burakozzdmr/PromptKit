@@ -21,7 +21,7 @@ public class ImageAnalyzer {
         imageData: Data,
         apiKey: String,
         generateType: TextGenerateType,
-        generateService: GenerateService = .init()
+        generateService: GenerateServiceProtocol
     ) {
         self.promptRules = promptRules
         self.imageData = imageData
