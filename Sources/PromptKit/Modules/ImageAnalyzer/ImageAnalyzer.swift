@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - ImageAnalyzer
+
 public class ImageAnalyzer {
     private let promptRules: String
     private let imageData: Data
@@ -27,7 +29,11 @@ public class ImageAnalyzer {
         self.generateType = generateType
         self.generateService = generateService
     }
-    
+}
+
+// MARK: - Private Methods
+
+private extension ImageAnalyzer {
     private func prepareImageAnalyzerData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
         generateService.fetchImageAnalyze(
             rules: promptRules,
@@ -43,8 +49,12 @@ public class ImageAnalyzer {
             }
         }
     }
-    
-    public func fetchImageAnalyzeData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
+}
+
+// MARK: - Public Methods
+
+public extension ImageAnalyzer {
+    func fetchImageAnalyzeData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
         prepareImageAnalyzerData { imageAnalyzeResult in
             completion(imageAnalyzeResult)
         }

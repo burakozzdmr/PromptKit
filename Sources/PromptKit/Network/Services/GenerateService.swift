@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - GenerateServiceProtocol
+
 protocol GenerateServiceProtocol {
     func fetchTextMessage(
         rules: String?,
@@ -24,6 +26,8 @@ protocol GenerateServiceProtocol {
     )
 }
 
+// MARK: - GenerateService
+
 public class GenerateService {
     private let networkManager: NetworkManagerProtocol
     
@@ -31,6 +35,8 @@ public class GenerateService {
         self.networkManager = networkManager
     }
 }
+
+// MARK: - Methods
 
 extension GenerateService: GenerateServiceProtocol {
     func fetchTextMessage(

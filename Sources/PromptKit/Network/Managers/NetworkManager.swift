@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - NetworkManagerProtocol
+
 protocol NetworkManagerProtocol {
     func sendRequest<T: Codable & Sendable>(
         request: URLRequest,
@@ -15,6 +17,7 @@ protocol NetworkManagerProtocol {
     )
 }
 
+// MARK: - NetworkManager
 
 public class NetworkManager {
     private let session: URLSession
@@ -23,6 +26,8 @@ public class NetworkManager {
         self.session = session
     }
 }
+
+// MARK: - Methods
 
 extension NetworkManager: NetworkManagerProtocol {
     func sendRequest<T: Codable & Sendable>(

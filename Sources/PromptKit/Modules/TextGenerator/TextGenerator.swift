@@ -7,6 +7,8 @@
  
 import Foundation
 
+// MARK: - TextGenerator
+
 public class TextGenerator {
     private let promptRules: String?
     private let prompt: String
@@ -27,7 +29,11 @@ public class TextGenerator {
         self.generateType = generateType
         self.generateService = generateService
     }
-    
+}
+
+// MARK: - Private Methods
+
+private extension TextGenerator {
     private func prepareGeneratedData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
         if generateType == .textGeneratorGPT {
             generateService.fetchTextMessage(rules: promptRules, prompt: prompt, generateType: generateType, apiKey: apiKey) { generatedData in
@@ -40,11 +46,14 @@ public class TextGenerator {
             }
         }
     }
-    
-    public func fetchGeneratedText(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
+}
+
+// MARK: - Public Methods
+
+public extension TextGenerator {
+    func fetchGeneratedText(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
         prepareGeneratedData { generatedTextResult in
             completion(generatedTextResult)
         }
     }
 }
-

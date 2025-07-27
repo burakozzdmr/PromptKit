@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - Protocols
+
 public protocol EndpointProtocol {
     var baseURL: String { get }
     var path: String { get }
@@ -14,10 +16,14 @@ public protocol EndpointProtocol {
     static func prepareRequestURL(_ endpoint: Self) -> Result<URLRequest, NetworkError>
 }
 
+// MARK: - Enums
+
 public enum EndpointType {
     case textGeneratorGPT(promptRules: String?, prompt: String, apiKey: String)
     case imageAnalyzerGPT(promptRules: String?, imageData: String, apiKey: String)
 }
+
+// MARK: - Extensions
 
 public extension EndpointType {
     var baseURL: String {
