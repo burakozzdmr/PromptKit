@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum NetworkError: Error {
+public enum NetworkError: Error, Equatable {
     case invalidURL
     case requestFailedError
     case requestTimedOutError
@@ -35,6 +35,24 @@ public enum NetworkError: Error {
             return "Decoding failed"
         case .generalError(let error):
             return error.localizedDescription
+        }
+    }
+    
+    public static func == (lhs: NetworkError, rhs: NetworkError) -> Bool {
+        switch (lhs, rhs) {
+        case (.invalidURL, .invalidURL),
+             (.requestFailedError, .requestFailedError),
+             (.requestTimedOutError, .requestTimedOutError),
+             (.cannotFindHost, .cannotFindHost),
+             (.noDataError, .noDataError),
+             (.decodingFailedError, .decodingFailedError):
+            return true
+        case let (.statusCodeError(lhsCode), .statusCodeError(rhsCode)):
+            return lhsCode == rhsCode
+        case let (.generalError(lhsError), .generalError(rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            return false
         }
     }
 }

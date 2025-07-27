@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - GenerateServiceProtocol
 
-protocol GenerateServiceProtocol {
+public protocol GenerateServiceProtocol {
     func fetchTextMessage(
         rules: String?,
         prompt: String,
@@ -39,7 +39,7 @@ public class GenerateService {
 // MARK: - Methods
 
 extension GenerateService: GenerateServiceProtocol {
-    func fetchTextMessage(
+    public func fetchTextMessage(
         rules: String? = "",
         prompt: String,
         generateType: TextGenerateType,
@@ -62,7 +62,7 @@ extension GenerateService: GenerateServiceProtocol {
         }
     }
     
-    func fetchImageAnalyze(
+    public func fetchImageAnalyze(
         rules: String,
         imageData: Data,
         generateType: TextGenerateType,
