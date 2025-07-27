@@ -8,12 +8,17 @@
 import Foundation
 
 public struct GPTAnalyzeResponseModel: Codable, Sendable {
-    public struct Choice: Codable, Sendable {
-        public struct Message: Codable, Sendable {
-             let content: String
-        }
+    public let choices: [Choice]
+}
+
+public extension GPTAnalyzeResponseModel {
+    struct Choice: Codable, Sendable {
         public let message: Message
     }
+}
 
-    public let choices: [Choice]
+public extension GPTAnalyzeResponseModel.Choice {
+    struct Message: Codable, Sendable {
+         let content: String
+    }
 }

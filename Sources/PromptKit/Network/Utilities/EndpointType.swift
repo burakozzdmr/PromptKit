@@ -21,11 +21,11 @@ public enum EndpointType {
 
 public extension EndpointType {
     var baseURL: String {
-        return NetworkConstants.gptBaseURL
+        return NetworkConstants.GPTConstants.baseURL
     }
     
     var path: String {
-        return NetworkConstants.completionsPath
+        return NetworkConstants.GPTConstants.completionsPath
     }
     
     var method: HTTPMethod {
@@ -42,14 +42,21 @@ public extension EndpointType {
         case .textGeneratorGPT(let rules, let prompt, let apiKey):
             var request: URLRequest = .init(url: requestURL)
             request.httpMethod = endpoint.method.rawValue
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(
+                "\(NetworkConstants.apiKeyPrefix) \(apiKey)",
+                forHTTPHeaderField: NetworkConstants.authorizationHeaderKey
+            )
+            
+            request.setValue(
+                NetworkConstants.jsonContentType,
+                forHTTPHeaderField: NetworkConstants.contentTypeHeaderKey
+            )
             
             let requestModel = GPTAnalyzeRequestModel(
                 model: "gpt-3.5-turbo",
                 messages: [
-                    AnalyzeModel(role: "system", content: rules),
-                    AnalyzeModel(role: "user", content: prompt)
+                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.systemRoleName, content: rules),
+                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.userRoleName, content: prompt)
                 ]
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
@@ -58,14 +65,21 @@ public extension EndpointType {
         case .imageAnalyzerGPT(let rules, let imageData, let apiKey):
             var request: URLRequest = .init(url: requestURL)
             request.httpMethod = endpoint.method.rawValue
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(
+                "\(NetworkConstants.apiKeyPrefix) \(apiKey)",
+                forHTTPHeaderField: NetworkConstants.authorizationHeaderKey
+            )
+            
+            request.setValue(
+                NetworkConstants.jsonContentType,
+                forHTTPHeaderField: NetworkConstants.contentTypeHeaderKey
+            )
             
             let requestModel = GPTAnalyzeRequestModel(
                 model: "gpt-3.5-turbo",
                 messages: [
-                    AnalyzeModel(role: "system", content: rules),
-                    AnalyzeModel(role: "user", content: imageData)
+                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.systemRoleName, content: rules),
+                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.userRoleName, content: imageData)
                 ]
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)

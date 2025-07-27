@@ -12,7 +12,9 @@ public struct GPTAnalyzeRequestModel: Codable {
     let messages: [AnalyzeModel]
 }
 
-public struct AnalyzeModel: Codable {
-    let role: String
-    let content: String?
+public extension GPTAnalyzeRequestModel {
+    struct AnalyzeModel: Codable {
+        let role: String
+        let content: String?
+    }
 }
