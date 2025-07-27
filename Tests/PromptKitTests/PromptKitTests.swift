@@ -151,7 +151,11 @@ final class PromptKitTests: XCTestCase {
             case .success:
                 XCTFail("Request should fail")
             case .failure(let error):
-                XCTAssertEqual(error, NetworkError.statusCodeError(400))
+                if case .statusCodeError(let code) = error {
+                    XCTAssertEqual(code, 400)
+                } else {
+                    XCTFail("Wrong error type received")
+                }
                 expectation.fulfill()
             }
         }
@@ -221,8 +225,11 @@ final class PromptKitTests: XCTestCase {
             case .success:
                 XCTFail("Text generation should fail")
             case .failure(let error):
-                XCTAssertEqual(error, NetworkError.requestFailedError)
-                expectation.fulfill()
+                if case .requestFailedError = error {
+                    expectation.fulfill()
+                } else {
+                    XCTFail("Wrong error type received")
+                }
             }
         }
         
@@ -257,7 +264,6 @@ final class MockURLSessionDataTask: URLSessionDataTask, @unchecked Sendable {
     init(closure: @escaping () -> Void) {
         self.closure = closure
         super.init()
-        
     }
     
     override func resume() {
