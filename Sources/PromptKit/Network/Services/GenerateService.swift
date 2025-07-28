@@ -1,0 +1,88 @@
+//
+//  GenerateService.swift
+//  PromptKit
+//
+//  Created by Burak Özdemir on 21.07.2025.
+//
+
+import Foundation
+
+// MARK: - GenerateServiceProtocol
+
+public protocol GenerateServiceProtocol {
+    func fetchTextMessage(
+        rules: String?,
+        prompt: String,
+        generateType: TextGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+    )
+    func fetchImageAnalyze(
+        rules: String,
+        imageData: Data,
+        generateType: ImageGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+    )
+}
+
+// MARK: - GenerateService
+
+public class GenerateService {
+    private let networkManager: NetworkManagerProtocol
+    
+    public init(networkManager: NetworkManager = .init()) {
+        self.networkManager = networkManager
+    }
+}
+
+// MARK: - Methods
+
+extension GenerateService: GenerateServiceProtocol {
+    public func fetchTextMessage(
+        rules: String? = "",
+        prompt: String,
+        generateType: TextGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+    ) {
+        if generateType == .textGeneratorGPT {
+            let request = EndpointType.prepareRequestURL(.textGeneratorGPT(promptRules: rules, prompt: prompt, apiKey: apiKey))
+            
+            switch request {
+            case .success(let textRequest):
+                networkManager.sendRequest(
+                    request: textRequest,
+                    T: GPTAnalyzeResponseModel.self,
+                    completion: completion
+                )
+            case .failure(let errorType):
+                completion(.failure(errorType))
+            }
+        }
+    }
+    
+    public func fetchImageAnalyze(
+        rules: String,
+        imageData: Data,
+        generateType: ImageGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+    ) {
+        if generateType == .imageAnalyzerGPT {
+            let imageDataBase64 = imageData.base64EncodedString()
+            let request = EndpointType.prepareRequestURL(.imageAnalyzerGPT(promptRules: rules, imageData: imageDataBase64, apiKey: apiKey))
+            
+            switch request {
+            case .success(let imageRequest):
+                networkManager.sendRequest(
+                    request: imageRequest,
+                    T: GPTAnalyzeResponseModel.self,
+                    completion: completion
+                )
+            case .failure(let errorType):
+                print(errorType.errorMessage)
+            }
+        }
+    }
+}
