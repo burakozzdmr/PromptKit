@@ -13,15 +13,15 @@ public class ImageAnalyzer {
     private let promptRules: String
     private let imageData: Data
     private let apiKey: String
-    private let generateType: TextGenerateType
+    private let generateType: ImageGenerateType
     private let generateService: GenerateServiceProtocol
     
     public init(
         promptRules: String,
         imageData: Data,
         apiKey: String,
-        generateType: TextGenerateType,
-        generateService: GenerateServiceProtocol
+        generateType: ImageGenerateType,
+        generateService: GenerateService = .init()
     ) {
         self.promptRules = promptRules
         self.imageData = imageData

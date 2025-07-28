@@ -20,7 +20,7 @@ public protocol GenerateServiceProtocol {
     func fetchImageAnalyze(
         rules: String,
         imageData: Data,
-        generateType: TextGenerateType,
+        generateType: ImageGenerateType,
         apiKey: String,
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     )
@@ -65,11 +65,11 @@ extension GenerateService: GenerateServiceProtocol {
     public func fetchImageAnalyze(
         rules: String,
         imageData: Data,
-        generateType: TextGenerateType,
+        generateType: ImageGenerateType,
         apiKey: String,
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     ) {
-        if generateType == .textGeneratorGPT {
+        if generateType == .imageAnalyzerGPT {
             let imageDataBase64 = imageData.base64EncodedString()
             let request = EndpointType.prepareRequestURL(.imageAnalyzerGPT(promptRules: rules, imageData: imageDataBase64, apiKey: apiKey))
             

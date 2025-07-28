@@ -21,7 +21,7 @@ public class TextGenerator {
         prompt: String,
         apiKey: String,
         generateType: TextGenerateType,
-        generateService: GenerateServiceProtocol
+        generateService: GenerateService = .init()
     ) {
         self.promptRules = promptRules
         self.prompt = prompt
