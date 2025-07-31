@@ -10,19 +10,32 @@ import Foundation
 // MARK: - GenerateServiceProtocol
 
 public protocol GenerateServiceProtocol {
-    func fetchTextMessage(
+    func fetchTextMessageForGpt(
         rules: String?,
         prompt: String,
         generateType: TextGenerateType,
         apiKey: String,
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
     )
-    func fetchImageAnalyze(
+    func fetchImageAnalyzeForGpt(
         rules: String,
         imageData: Data,
         generateType: ImageGenerateType,
         apiKey: String,
         completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+    )
+    
+    func fetchTextMessageForGemini(
+        prompt: String,
+        generateType: TextGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (Result<GeminiResponseModel, NetworkError>) -> Void
+    )
+    func fetchImageAnalyzeForGemini(
+        imageData: Data,
+        generateType: ImageGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (Result<GeminiResponseModel, NetworkError>) -> Void
     )
 }
 
@@ -39,7 +52,7 @@ public class GenerateService {
 // MARK: - Methods
 
 extension GenerateService: GenerateServiceProtocol {
-    public func fetchTextMessage(
+    public func fetchTextMessageForGpt(
         rules: String? = "",
         prompt: String,
         generateType: TextGenerateType,
@@ -62,7 +75,7 @@ extension GenerateService: GenerateServiceProtocol {
         }
     }
     
-    public func fetchImageAnalyze(
+    public func fetchImageAnalyzeForGpt(
         rules: String,
         imageData: Data,
         generateType: ImageGenerateType,
@@ -78,6 +91,56 @@ extension GenerateService: GenerateServiceProtocol {
                 networkManager.sendRequest(
                     request: imageRequest,
                     T: GPTAnalyzeResponseModel.self,
+                    completion: completion
+                )
+            case .failure(let errorType):
+                print(errorType.errorMessage)
+            }
+        }
+    }
+    
+    public func fetchTextMessageForGemini(
+        prompt: String,
+        generateType: TextGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (
+            Result<GeminiResponseModel, NetworkError>
+        ) -> Void
+    ) {
+        if generateType == .textGeneratorGemini {
+            let request = EndpointType.prepareRequestURL(.gemini(prompt: prompt, apiKey: apiKey))
+            
+            switch request {
+            case .success(let successRequest):
+                networkManager.sendRequest(
+                    request: successRequest,
+                    T: GeminiResponseModel.self,
+                    completion: completion 
+                )
+            case .failure(let errorType):
+                print(errorType.errorMessage)
+            }
+        }
+    }
+    
+    public func fetchImageAnalyzeForGemini(
+        imageData: Data,
+        generateType: ImageGenerateType,
+        apiKey: String,
+        completion: @Sendable @escaping (
+            Result<GeminiResponseModel, NetworkError>
+        ) -> Void
+    ) {
+        if generateType == .imageAnalyzerGemini {
+            let imageDataConvertedBase64 = imageData.base64EncodedString()
+            
+            let request = EndpointType.prepareRequestURL(.gemini(prompt: imageDataConvertedBase64, apiKey: apiKey))
+            
+            switch request {
+            case .success(let successRequest):
+                networkManager.sendRequest(
+                    request: successRequest,
+                    T: GeminiResponseModel.self,
                     completion: completion
                 )
             case .failure(let errorType):

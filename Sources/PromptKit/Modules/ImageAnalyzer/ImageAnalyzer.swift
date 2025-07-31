@@ -14,20 +14,18 @@ public class ImageAnalyzer {
     private let imageData: Data
     private let apiKey: String
     private let generateType: ImageGenerateType
-    private let generateService: GenerateServiceProtocol
+    private let generateService: GenerateService = .init()
     
     public init(
         promptRules: String,
         imageData: Data,
         apiKey: String,
         generateType: ImageGenerateType,
-        generateService: GenerateService = .init()
     ) {
         self.promptRules = promptRules
         self.imageData = imageData
         self.apiKey = apiKey
         self.generateType = generateType
-        self.generateService = generateService
     }
 }
 
@@ -35,17 +33,28 @@ public class ImageAnalyzer {
 
 private extension ImageAnalyzer {
     private func prepareImageAnalyzerData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
-        generateService.fetchImageAnalyze(
-            rules: promptRules,
-            imageData: imageData,
-            generateType: generateType,
-            apiKey: apiKey
-        ) { imageAnalyzeData in
-            switch imageAnalyzeData {
-            case .success(let analyzeData):
-                completion(.success(analyzeData.choices.first?.message.content ?? ""))
-            case .failure(let errorType):
-                completion(.failure(errorType))
+        if generateType == .imageAnalyzerGPT {
+            generateService.fetchImageAnalyzeForGpt(
+                rules: promptRules,
+                imageData: imageData,
+                generateType: generateType,
+                apiKey: apiKey
+            ) { imageAnalyzeResult in
+                switch imageAnalyzeResult {
+                case .success(let analyzeData):
+                    completion(.success(analyzeData.choices.first?.message.content ?? ""))
+                case .failure(let errorType):
+                    completion(.failure(errorType))
+                }
+            }
+        } else if generateType == .imageAnalyzerGemini {
+            generateService.fetchImageAnalyzeForGemini(imageData: imageData, generateType: generateType, apiKey: apiKey) { imageAnalyzeResult in
+                switch imageAnalyzeResult {
+                case .success(let analyzeData):
+                    completion(.success(analyzeData.candidates.first?.content ?? ""))
+                case .failure(let errorType):
+                    completion(.failure(errorType))
+                }
             }
         }
     }
