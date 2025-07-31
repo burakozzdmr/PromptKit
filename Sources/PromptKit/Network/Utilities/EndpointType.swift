@@ -13,6 +13,8 @@ public protocol EndpointProtocol {
     var baseURL: String { get }
     var path: String { get }
     var method: HTTPMethod { get }
+    var queryItems: [URLQueryItem]? { get }
+    var headers: [String: String]? { get }
     static func prepareRequestURL(_ endpoint: Self) -> Result<URLRequest, NetworkError>
 }
 
@@ -21,27 +23,60 @@ public protocol EndpointProtocol {
 public enum EndpointType {
     case textGeneratorGPT(promptRules: String?, prompt: String, apiKey: String)
     case imageAnalyzerGPT(promptRules: String?, imageData: String, apiKey: String)
+    case gemini(prompt: String, apiKey: String)
 }
 
 // MARK: - Extensions
 
 public extension EndpointType {
     var baseURL: String {
-        return NetworkConstants.GPTConstants.baseURL
+        switch self {
+        case .textGeneratorGPT, .imageAnalyzerGPT:
+            return NetworkConstants.GPTConstants.baseURL
+            
+        case .gemini:
+            return NetworkConstants.GeminiConstants.baseURL
+        }
     }
     
     var path: String {
-        return NetworkConstants.GPTConstants.completionsPath
+        switch self {
+        case .textGeneratorGPT, .imageAnalyzerGPT:
+            return NetworkConstants.GPTConstants.completionsPath
+            
+        case .gemini:
+            return NetworkConstants.GeminiConstants.geminiPath
+        }
     }
     
     var method: HTTPMethod {
         return .POST
     }
     
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .gemini(_, let apiKey):
+            return [
+                URLQueryItem(name: "key", value: "\(apiKey)")
+            ]
+        default:
+            return nil
+        }
+    }
+    
+    var headers: [String: String]? {
+        return [NetworkConstants.jsonContentType: NetworkConstants.contentTypeHeaderKey]
+    }
+    
     static func prepareRequestURL(_ endpoint: EndpointType) -> Result<URLRequest, NetworkError> {
-        guard let urlComponents = URLComponents(string: endpoint.baseURL + endpoint.path),
-              let requestURL = urlComponents.url else {
+        guard var urlComponents = URLComponents(string: endpoint.baseURL + endpoint.path) else {
             return .failure(.invalidURL)
+        }
+
+        urlComponents.queryItems = endpoint.queryItems
+
+        guard let requestURL = urlComponents.url else {
+            return .failure(.requestFailedError)
         }
         
         switch endpoint {
@@ -89,6 +124,22 @@ public extension EndpointType {
                 ]
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
+            return .success(request)
+        case .gemini(let prompt, _):
+            var request: URLRequest = .init(url: requestURL)
+            request.httpMethod = endpoint.method.rawValue
+            request.allHTTPHeaderFields = endpoint.headers
+            
+            let requestBodyModel = GeminiRequestModel(
+                contents: [GeminiRequestModel.Content(
+                    parts: [
+                        GeminiRequestModel.Content.Part(
+                            text: prompt
+                        )
+                    ]
+                )]
+            )
+            request.httpBody = try? JSONEncoder().encode(requestBodyModel)
             return .success(request)
         }
     }
