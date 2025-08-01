@@ -23,6 +23,6 @@ public struct NetworkConstants {
     
     struct GeminiConstants {
         public static let baseURL = "https://generativelanguage.googleapis.com/v1/models/"
-        public static let geminiPath = "gemini-2.0-flash-lite:generateContent"
+        public static let textGeneratePath = "gemini-2.0-flash-lite:generateContent"
     }
 }

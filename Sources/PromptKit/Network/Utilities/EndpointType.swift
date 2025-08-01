@@ -49,7 +49,7 @@ public extension EndpointType {
             return NetworkConstants.GPTConstants.imageGeneratePath
             
         case .textGeneratorGemini:
-            return NetworkConstants.GeminiConstants.geminiPath
+            return NetworkConstants.GeminiConstants.textGeneratePath
         }
     }
     
