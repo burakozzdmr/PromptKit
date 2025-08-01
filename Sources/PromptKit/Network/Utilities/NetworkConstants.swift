@@ -16,6 +16,7 @@ public struct NetworkConstants {
     struct GPTConstants {
         public static let baseURL = "https://api.openai.com/v1/"
         public static let completionsPath = "chat/completions"
+        public static let imageGeneratePath = "images/generations"
         public static let systemRoleName = "system"
         public static let userRoleName = "user"
     }
