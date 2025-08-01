@@ -23,7 +23,8 @@ public protocol EndpointProtocol {
 public enum EndpointType {
     case textGeneratorGPT(promptRules: String?, prompt: String, apiKey: String)
     case imageAnalyzerGPT(promptRules: String?, imageData: String, apiKey: String)
-    case gemini(prompt: String, apiKey: String)
+    case imageGeneratorGPT(prompt: String, apiKey: String)
+    case textGeneratorGemini(prompt: String, apiKey: String)
 }
 
 // MARK: - Extensions
@@ -31,10 +32,10 @@ public enum EndpointType {
 public extension EndpointType {
     var baseURL: String {
         switch self {
-        case .textGeneratorGPT, .imageAnalyzerGPT:
+        case .textGeneratorGPT, .imageAnalyzerGPT, .imageGeneratorGPT:
             return NetworkConstants.GPTConstants.baseURL
             
-        case .gemini:
+        case .textGeneratorGemini:
             return NetworkConstants.GeminiConstants.baseURL
         }
     }
@@ -44,8 +45,11 @@ public extension EndpointType {
         case .textGeneratorGPT, .imageAnalyzerGPT:
             return NetworkConstants.GPTConstants.completionsPath
             
-        case .gemini:
-            return NetworkConstants.GeminiConstants.geminiPath
+        case .imageGeneratorGPT:
+            return NetworkConstants.GPTConstants.imageGeneratePath
+            
+        case .textGeneratorGemini:
+            return NetworkConstants.GeminiConstants.textGeneratePath
         }
     }
     
@@ -55,7 +59,7 @@ public extension EndpointType {
     
     var queryItems: [URLQueryItem]? {
         switch self {
-        case .gemini(_, let apiKey):
+        case .textGeneratorGemini(_, let apiKey):
             return [
                 URLQueryItem(name: "key", value: "\(apiKey)")
             ]
@@ -125,7 +129,8 @@ public extension EndpointType {
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
             return .success(request)
-        case .gemini(let prompt, _):
+            
+        case .textGeneratorGemini(let prompt, _):
             var request: URLRequest = .init(url: requestURL)
             request.httpMethod = endpoint.method.rawValue
             request.allHTTPHeaderFields = endpoint.headers
@@ -139,6 +144,30 @@ public extension EndpointType {
                     ]
                 )]
             )
+            request.httpBody = try? JSONEncoder().encode(requestBodyModel)
+            return .success(request)
+            
+        case .imageGeneratorGPT(prompt: let prompt,apiKey: let apiKey):
+            var request: URLRequest = .init(url: requestURL)
+            request.httpMethod = endpoint.method.rawValue
+            
+            request.setValue(
+                "\(NetworkConstants.apiKeyPrefix) \(apiKey)",
+                forHTTPHeaderField: NetworkConstants.authorizationHeaderKey
+            )
+            
+            request.setValue(
+                NetworkConstants.jsonContentType,
+                forHTTPHeaderField: NetworkConstants.contentTypeHeaderKey
+            )
+            
+            let requestBodyModel = GPTImageGenerateRequestModel(
+                model: "dall-e-3",
+                prompt: prompt,
+                n: 1,
+                size: "1024x1024"
+            )
+            
             request.httpBody = try? JSONEncoder().encode(requestBodyModel)
             return .success(request)
         }
