@@ -72,5 +72,29 @@ func sendPrompt() {
     }
 }
 ```
+
+### Image Generator
+```swift
+class Test {
+    let imageGenerator = ImageGenerator(
+        prompt: "",
+        generateType: .imageGeneratorGPT,
+        apiKey: ""
+    )
+    
+    func fetchGeneratedImage() {
+        imageGenerator.fetchGeneratedImage { generateImageResult in
+            switch generateImageResult {
+            case .success(let imageData):
+                let image = UIImage(data: imageData)
+                imageView.image = image
+                
+            case .failure(let errorType):
+                print(errorType.errorMessage)
+            }
+        }
+    }
+}
+```
 # LICENSE
 [MIT](https://github.com/burakozzdmr/PromptKit/blob/main/LICENSE)
