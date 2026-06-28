@@ -14,6 +14,6 @@ public struct GPTImageGenerateResponseModel: Codable, Sendable {
 
 public extension GPTImageGenerateResponseModel {
     struct GPTImageResponse: Codable, Sendable {
-        let url: String
+        let b64_json: String
     }
 }

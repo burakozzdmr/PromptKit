@@ -8,7 +8,7 @@
 import Foundation
 
 public enum TextGenerateType {
-    case textGeneratorGPT
-    case textGeneratorGemini
-    case textGeneratorClaude
+    case gpt
+    case gemini
+    case claude
 }

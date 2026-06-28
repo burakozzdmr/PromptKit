@@ -6,7 +6,7 @@
 //
 
 public enum ImageAnalyzeType {
-    case imageAnalyzerGPT
-    case imageAnalyzerGemini
-    case imageAnalyzerClaude
+    case gpt
+    case gemini
+    case claude
 }
