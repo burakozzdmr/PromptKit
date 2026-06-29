@@ -14,7 +14,7 @@ protocol NetworkManagerProtocol {
     func sendRequest<T: Codable & Sendable>(
         request: URLRequest,
         T: T.Type,
-        completion: @Sendable @escaping (Result<T, NetworkError>) -> Void
+        completion: @escaping (Result<T, NetworkError>) -> Void
     )
     
     func sendRequestPublisher<T: Codable>(
@@ -39,7 +39,7 @@ extension NetworkManager: NetworkManagerProtocol {
     func sendRequest<T: Codable & Sendable>(
         request: URLRequest,
         T: T.Type,
-        completion: @Sendable @escaping (Result<T, NetworkError>) -> Void
+        completion: @escaping (Result<T, NetworkError>) -> Void
     ){
         session.dataTask(with: request) { data, httpResponse, error in
             guard error == nil else {

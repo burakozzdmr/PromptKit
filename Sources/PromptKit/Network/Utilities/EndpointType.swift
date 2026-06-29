@@ -25,6 +25,7 @@ public enum EndpointType {
     case imageAnalyzerGPT(promptRules: String?, imageData: Data, apiKey: String)
     case imageGeneratorGPT(prompt: String, apiKey: String)
     case textGeneratorGemini(prompt: String, apiKey: String)
+    case imageAnalyzerGemini(prompt: String, imageData: Data, apiKey: String)
     case textGeneratorClaude(promptRules: String?, prompt: String, apiKey: String)
     case imageAnalyzerClaude(promptRules: String?, imageData: Data, apiKey: String)
 }
@@ -36,7 +37,7 @@ public extension EndpointType {
         switch self {
         case .textGeneratorGPT, .imageAnalyzerGPT, .imageGeneratorGPT:
             return NetworkConstants.GPTConstants.baseURL
-        case .textGeneratorGemini:
+        case .textGeneratorGemini, .imageAnalyzerGemini:
             return NetworkConstants.GeminiConstants.baseURL
         case .textGeneratorClaude, .imageAnalyzerClaude:
             return NetworkConstants.ClaudeConstants.baseURL
@@ -49,7 +50,7 @@ public extension EndpointType {
             return NetworkConstants.GPTConstants.responsesPath
         case .imageGeneratorGPT:
             return NetworkConstants.GPTConstants.imageGeneratePath
-        case .textGeneratorGemini:
+        case .textGeneratorGemini, .imageAnalyzerGemini:
             return NetworkConstants.GeminiConstants.textGeneratePath
         case .textGeneratorClaude, .imageAnalyzerClaude:
             return NetworkConstants.ClaudeConstants.messagesPath
@@ -183,6 +184,17 @@ public extension EndpointType {
             )
             
             let request = makeRequest(url: requestURL, auth: .claude(apiKey: apiKey), body: body)
+            return .success(request)
+        case .imageAnalyzerGemini(prompt: let prompt, imageData: let imageData, apiKey: let apiKey):
+            let body = GeminiTextGenerateRequestModel(
+                contents: [
+                    GeminiTextGenerateRequestModel.Content(
+                        parts: [GeminiTextGenerateRequestModel.Content.Part(text: prompt, inlineData: nil)]
+                    )
+                ]
+            )
+            
+            let request = makeRequest(url: requestURL, auth: .none, body: body)
             return .success(request)
         }
     }
