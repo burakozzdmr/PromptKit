@@ -29,7 +29,7 @@ public class ImageGenerator {
 // MARK: - Publics
 
 public extension ImageGenerator {
-    func fetchGeneratedImage(completion: @Sendable @escaping (Result<Data, NetworkError>) -> Void) {
+    func fetchGeneratedImage(completion: @escaping (Result<Data, NetworkError>) -> Void) {
         imageGenerateService.fetchGeneratedImageForGpt(prompt: prompt, generateType: generateType, apiKey: apiKey) { imageResult in
             switch imageResult {
             case .success(let imageData):

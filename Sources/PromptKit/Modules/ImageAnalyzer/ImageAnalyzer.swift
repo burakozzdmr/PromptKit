@@ -49,7 +49,12 @@ private extension ImageAnalyzer {
                 }
             }
         } else if generateType == .gemini {
-            imageGenerateService.fetchImageAnalyzeForGemini(imageData: imageData, generateType: generateType, apiKey: apiKey) { imageAnalyzeResult in
+            imageGenerateService.fetchImageAnalyzeForGemini(
+                prompt: promptRules,
+                imageData: imageData,
+                generateType: generateType,
+                apiKey: apiKey
+            ) { imageAnalyzeResult in
                 switch imageAnalyzeResult {
                 case .success(let analyzeData):
                     completion(.success(analyzeData.candidates.first?.content.parts.first?.text ?? ""))

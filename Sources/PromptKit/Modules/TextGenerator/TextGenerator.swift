@@ -35,7 +35,7 @@ public class TextGenerator {
 // MARK: - Private Methods
 
 private extension TextGenerator {
-    private func prepareGeneratedData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
+    private func prepareGeneratedData(completion: @escaping (Result<String, NetworkError>) -> Void) {
         if generateType == .gpt {
             textGenerateService.fetchTextMessageForGpt(rules: promptRules, prompt: prompt, generateType: generateType, apiKey: apiKey) { generatedData in
                 switch generatedData {
@@ -61,7 +61,7 @@ private extension TextGenerator {
 // MARK: - Public Methods
 
 public extension TextGenerator {
-    func fetchGeneratedText(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
+    func fetchGeneratedText(completion: @escaping (Result<String, NetworkError>) -> Void) {
         prepareGeneratedData { generatedTextResult in
             completion(generatedTextResult)
         }
