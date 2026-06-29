@@ -20,13 +20,13 @@ extension GeminiTextGenerateRequestModel {
 extension GeminiTextGenerateRequestModel.Content {
     struct Part: Codable {
         let text: String?
-        let inline_data: InlineData?
+        let inlineData: InlineData?
     }
 }
 
 extension GeminiTextGenerateRequestModel.Content.Part {
     struct InlineData: Codable {
-        let mime_type: String
+        let mimeType: String
         let data: String
     }
 }

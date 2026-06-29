@@ -25,4 +25,13 @@ public struct NetworkConstants {
         public static let baseURL = "https://generativelanguage.googleapis.com/v1/models/"
         public static let textGeneratePath = "gemini-2.0-flash-lite:generateContent"
     }
+    
+    struct ClaudeConstants {
+        public static let baseURL = "https://api.anthropic.com/v1"
+        public static let messagesPath = "/messages"
+        public static let apiKeyHeaderKey = "x-api-key"
+        public static let apiVersionHeaderKey = "anthropic-version"
+        public static let apiVersionValue = "2023-06-01"
+        public static let userRoleName = "user"
+    }
 }
