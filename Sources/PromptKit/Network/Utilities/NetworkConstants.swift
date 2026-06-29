@@ -11,11 +11,11 @@ public struct NetworkConstants {
     public static let authorizationHeaderKey = "Authorization"
     public static let contentTypeHeaderKey = "Content-Type"
     public static let jsonContentType = "application/json"
-    public static let apiKeyPrefix = "Bearer "
+    public static let apiKeyPrefix = "Bearer"
     
     struct GPTConstants {
         public static let baseURL = "https://api.openai.com/v1/"
-        public static let completionsPath = "chat/completions"
+        public static let responsesPath = "responses"
         public static let imageGeneratePath = "images/generations"
         public static let systemRoleName = "system"
         public static let userRoleName = "user"

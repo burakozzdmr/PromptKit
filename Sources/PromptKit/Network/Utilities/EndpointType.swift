@@ -43,7 +43,7 @@ public extension EndpointType {
     var path: String {
         switch self {
         case .textGeneratorGPT, .imageAnalyzerGPT:
-            return NetworkConstants.GPTConstants.completionsPath
+            return NetworkConstants.GPTConstants.responsesPath
             
         case .imageGeneratorGPT:
             return NetworkConstants.GPTConstants.imageGeneratePath
@@ -91,18 +91,14 @@ public extension EndpointType {
                 "\(NetworkConstants.apiKeyPrefix) \(apiKey)",
                 forHTTPHeaderField: NetworkConstants.authorizationHeaderKey
             )
-            
             request.setValue(
                 NetworkConstants.jsonContentType,
                 forHTTPHeaderField: NetworkConstants.contentTypeHeaderKey
             )
-            
-            let requestModel = GPTAnalyzeRequestModel(
-                model: "gpt-3.5-turbo",
-                messages: [
-                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.systemRoleName, content: rules),
-                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.userRoleName, content: prompt)
-                ]
+            let requestModel = GPTTextGenerateRequestModel(
+                model: "gpt-4o-mini",
+                instructions: rules ?? "",
+                input: prompt
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
             return .success(request)
@@ -114,17 +110,28 @@ public extension EndpointType {
                 "\(NetworkConstants.apiKeyPrefix) \(apiKey)",
                 forHTTPHeaderField: NetworkConstants.authorizationHeaderKey
             )
-            
             request.setValue(
                 NetworkConstants.jsonContentType,
                 forHTTPHeaderField: NetworkConstants.contentTypeHeaderKey
             )
-            
-            let requestModel = GPTAnalyzeRequestModel(
-                model: "gpt-3.5-turbo",
-                messages: [
-                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.systemRoleName, content: rules),
-                    GPTAnalyzeRequestModel.AnalyzeModel(role: NetworkConstants.GPTConstants.userRoleName, content: imageData)
+            let requestModel = GPTImageAnalyzeRequestModel(
+                model: "gpt-4o",
+                input: [
+                    GPTImageAnalyzeRequestModel.ImageAnalyzeModel(
+                        role: NetworkConstants.GPTConstants.userRoleName,
+                        content: [
+                            GPTImageAnalyzeRequestModel.ImageAnalyzeModel.AnalyzeModel(
+                                type: "input_text",
+                                text: rules,
+                                image_url: nil
+                            ),
+                            GPTImageAnalyzeRequestModel.ImageAnalyzeModel.AnalyzeModel(
+                                type: "input_image",
+                                text: nil,
+                                image_url: imageData
+                            )
+                        ]
+                    )
                 ]
             )
             request.httpBody = try? JSONEncoder().encode(requestModel)
@@ -135,11 +142,12 @@ public extension EndpointType {
             request.httpMethod = endpoint.method.rawValue
             request.allHTTPHeaderFields = endpoint.headers
             
-            let requestBodyModel = GeminiRequestModel(
-                contents: [GeminiRequestModel.Content(
+            let requestBodyModel = GeminiTextGenerateRequestModel(
+                contents: [GeminiTextGenerateRequestModel.Content(
                     parts: [
-                        GeminiRequestModel.Content.Part(
-                            text: prompt
+                        GeminiTextGenerateRequestModel.Content.Part(
+                            text: prompt,
+                            inline_data: nil
                         )
                     ]
                 )]
@@ -147,27 +155,23 @@ public extension EndpointType {
             request.httpBody = try? JSONEncoder().encode(requestBodyModel)
             return .success(request)
             
-        case .imageGeneratorGPT(prompt: let prompt,apiKey: let apiKey):
+        case .imageGeneratorGPT(let prompt, let apiKey):
             var request: URLRequest = .init(url: requestURL)
             request.httpMethod = endpoint.method.rawValue
-            
             request.setValue(
                 "\(NetworkConstants.apiKeyPrefix) \(apiKey)",
                 forHTTPHeaderField: NetworkConstants.authorizationHeaderKey
             )
-            
             request.setValue(
                 NetworkConstants.jsonContentType,
                 forHTTPHeaderField: NetworkConstants.contentTypeHeaderKey
             )
-            
             let requestBodyModel = GPTImageGenerateRequestModel(
                 model: "dall-e-3",
                 prompt: prompt,
                 n: 1,
                 size: "1024x1024"
             )
-            
             request.httpBody = try? JSONEncoder().encode(requestBodyModel)
             return .success(request)
         }
