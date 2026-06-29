@@ -11,11 +11,11 @@ public struct NetworkConstants {
     public static let authorizationHeaderKey = "Authorization"
     public static let contentTypeHeaderKey = "Content-Type"
     public static let jsonContentType = "application/json"
-    public static let apiKeyPrefix = "Bearer "
+    public static let apiKeyPrefix = "Bearer"
     
     struct GPTConstants {
         public static let baseURL = "https://api.openai.com/v1/"
-        public static let completionsPath = "chat/completions"
+        public static let responsesPath = "responses"
         public static let imageGeneratePath = "images/generations"
         public static let systemRoleName = "system"
         public static let userRoleName = "user"
@@ -24,5 +24,14 @@ public struct NetworkConstants {
     struct GeminiConstants {
         public static let baseURL = "https://generativelanguage.googleapis.com/v1/models/"
         public static let textGeneratePath = "gemini-2.0-flash-lite:generateContent"
+    }
+    
+    struct ClaudeConstants {
+        public static let baseURL = "https://api.anthropic.com/v1"
+        public static let messagesPath = "/messages"
+        public static let apiKeyHeaderKey = "x-api-key"
+        public static let apiVersionHeaderKey = "anthropic-version"
+        public static let apiVersionValue = "2023-06-01"
+        public static let userRoleName = "user"
     }
 }

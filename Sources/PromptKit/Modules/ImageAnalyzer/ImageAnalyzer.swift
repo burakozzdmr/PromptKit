@@ -14,13 +14,14 @@ public class ImageAnalyzer {
     private let imageData: Data
     private let apiKey: String
     private let generateType: ImageGenerateType
-    private let generateService: GenerateService = .init()
+    private let imageGenerateService: ImageGenerateServiceProtocol = ImageGenerateService()
     
-    public init(
+    init(
         promptRules: String,
         imageData: Data,
         apiKey: String,
         generateType: ImageGenerateType,
+        imageGenerateService: ImageGenerateServiceProtocol
     ) {
         self.promptRules = promptRules
         self.imageData = imageData
@@ -33,8 +34,8 @@ public class ImageAnalyzer {
 
 private extension ImageAnalyzer {
     private func prepareImageAnalyzerData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
-        if generateType == .imageAnalyzerGPT {
-            generateService.fetchImageAnalyzeForGpt(
+        if generateType == .gpt {
+            imageGenerateService.fetchImageAnalyzeForGpt(
                 rules: promptRules,
                 imageData: imageData,
                 generateType: generateType,
@@ -42,16 +43,16 @@ private extension ImageAnalyzer {
             ) { imageAnalyzeResult in
                 switch imageAnalyzeResult {
                 case .success(let analyzeData):
-                    completion(.success(analyzeData.choices.first?.message.content ?? ""))
+                    completion(.success(analyzeData.output.first?.content?.first?.text ?? ""))
                 case .failure(let errorType):
                     completion(.failure(errorType))
                 }
             }
-        } else if generateType == .imageAnalyzerGemini {
-            generateService.fetchImageAnalyzeForGemini(imageData: imageData, generateType: generateType, apiKey: apiKey) { imageAnalyzeResult in
+        } else if generateType == .gemini {
+            imageGenerateService.fetchImageAnalyzeForGemini(imageData: imageData, generateType: generateType, apiKey: apiKey) { imageAnalyzeResult in
                 switch imageAnalyzeResult {
                 case .success(let analyzeData):
-                    completion(.success(analyzeData.candidates.first?.content ?? ""))
+                    completion(.success(analyzeData.candidates.first?.content.parts.first?.text ?? ""))
                 case .failure(let errorType):
                     completion(.failure(errorType))
                 }

@@ -8,7 +8,6 @@
 import Foundation
 
 public enum ImageGenerateType {
-    case imageGeneratorGPT
-    case imageAnalyzerGPT
-    case imageAnalyzerGemini
+    case gpt
+    case gemini
 }

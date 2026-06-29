@@ -14,18 +14,21 @@ public class TextGenerator {
     private let prompt: String
     private let apiKey: String
     private let generateType: TextGenerateType
-    private let generateService: GenerateService = .init()
+    private let textGenerateService: TextGenerateServiceProtocol
     
-    public init(
+    init(
         promptRules: String? = "",
         prompt: String,
         apiKey: String,
         generateType: TextGenerateType,
+        textGenerateService: TextGenerateServiceProtocol = TextGenerateService()
+        
     ) {
         self.promptRules = promptRules
         self.prompt = prompt
         self.apiKey = apiKey
         self.generateType = generateType
+        self.textGenerateService = textGenerateService
     }
 }
 
@@ -33,20 +36,20 @@ public class TextGenerator {
 
 private extension TextGenerator {
     private func prepareGeneratedData(completion: @Sendable @escaping (Result<String, NetworkError>) -> Void) {
-        if generateType == .textGeneratorGPT {
-            generateService.fetchTextMessageForGpt(rules: promptRules, prompt: prompt, generateType: generateType, apiKey: apiKey) { generatedData in
+        if generateType == .gpt {
+            textGenerateService.fetchTextMessageForGpt(rules: promptRules, prompt: prompt, generateType: generateType, apiKey: apiKey) { generatedData in
                 switch generatedData {
                 case .success(let generatedText):
-                    completion(.success(generatedText.choices.first?.message.content ?? ""))
+                    completion(.success(generatedText.output.first?.content?.first?.text ?? ""))
                 case .failure(let errorType):
                     completion(.failure(errorType))
                 }
             }
-        } else if generateType == .textGeneratorGemini {
-            generateService.fetchTextMessageForGemini(prompt: prompt, generateType: generateType, apiKey: apiKey) { generatedData in
+        } else if generateType == .gemini {
+            textGenerateService.fetchTextMessageForGemini(prompt: prompt, generateType: generateType, apiKey: apiKey) { generatedData in
                 switch generatedData {
                 case .success(let generatedText):
-                    completion(.success(generatedText.candidates.first?.content ?? ""))
+                    completion(.success(generatedText.candidates.first?.content.parts.first?.text ?? ""))
                 case .failure(let errorType):
                     completion(.failure(errorType))
                 }
