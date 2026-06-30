@@ -1,22 +1,11 @@
 //
-//  Endpoint+Extension.swift
+//  EndpointType.swift
 //  PromptKit
 //
 //  Created by Burak Özdemir on 21.07.2025.
 //
 
 import Foundation
-
-// MARK: - Protocols
-
-public protocol EndpointProtocol {
-    var baseURL: String { get }
-    var path: String { get }
-    var method: HTTPMethod { get }
-    var queryItems: [URLQueryItem]? { get }
-    var headers: [String: String]? { get }
-    static func prepareRequestURL(_ endpoint: Self) -> Result<URLRequest, NetworkError>
-}
 
 // MARK: - Enums
 
@@ -57,9 +46,7 @@ public extension EndpointType {
         }
     }
 
-    var method: HTTPMethod {
-        return .POST
-    }
+    var method: HTTPMethod { .POST }
 
     var queryItems: [URLQueryItem]? {
         switch self {
