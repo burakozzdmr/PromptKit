@@ -11,40 +11,27 @@ import Foundation
 // MARK: - TextGenerateServiceProtocol
 
 protocol TextGenerateServiceProtocol {
-    func fetchTextMessageForGpt(
+    func fetchTextMessage(
         rules: String?,
         prompt: String,
-        generateType: TextGenerateType,
         apiKey: String,
-        completion: @Sendable @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
-    )
-    
-    func fetchTextMessageForGemini(
-        prompt: String,
         generateType: TextGenerateType,
-        apiKey: String,
-        completion: @Sendable @escaping (Result<GeminiTextGenerateModel, NetworkError>) -> Void
+        completion: @escaping (Result<String, NetworkError>) -> Void
     )
-    
-    func fetchTextMessageForGPTPublisher(
+
+    func fetchTextMessagePublisher(
         rules: String?,
         prompt: String,
-        generateType: TextGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GPTAnalyzeResponseModel, NetworkError>
-    
-    func fetchTextMessageForGeminiPublisher(
-        prompt: String,
-        generateType: TextGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GeminiTextGenerateModel, NetworkError>
+        apiKey: String,
+        generateType: TextGenerateType
+    ) -> AnyPublisher<String, NetworkError>
 }
 
 // MARK: - TextGenerateService
 
 class TextGenerateService {
     private let networkManager: NetworkManagerProtocol
-    
+
     init(networkManager: NetworkManagerProtocol = NetworkManager(session: .init(configuration: .default))) {
         self.networkManager = networkManager
     }
@@ -53,76 +40,77 @@ class TextGenerateService {
 // MARK: - TextGenerateServiceProtocol Methods
 
 extension TextGenerateService: TextGenerateServiceProtocol {
-    
-    func fetchTextMessageForGpt(
+    func fetchTextMessage(
         rules: String?,
         prompt: String,
-        generateType: TextGenerateType,
         apiKey: String,
-        completion: @escaping @Sendable (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
+        generateType: TextGenerateType,
+        completion: @escaping (Result<String, NetworkError>) -> Void
     ) {
-        let request = EndpointType.prepareRequestURL(.textGeneratorGPT(promptRules: rules, prompt: prompt, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            networkManager.sendRequest(request: successRequest, T: GPTAnalyzeResponseModel.self, completion: completion)
-        case .failure(let error):
-            DispatchQueue.main.async {
-                completion(.failure(error))
+        switch generateType {
+        case .gpt:
+            send(.textGeneratorGPT(promptRules: rules, prompt: prompt, apiKey: apiKey), as: GPTAnalyzeResponseModel.self) { result in
+                completion(result.map { $0.output.first?.content?.first?.text ?? "" })
+            }
+        case .gemini:
+            send(.textGeneratorGemini(prompt: prompt, apiKey: apiKey), as: GeminiTextGenerateModel.self) { result in
+                completion(result.map { $0.candidates.first?.content.parts.first?.text ?? "" })
+            }
+        case .claude:
+            send(.textGeneratorClaude(promptRules: rules, prompt: prompt, apiKey: apiKey), as: ClaudeGenerateModel.self) { result in
+                completion(result.map { $0.content.first?.text ?? "" })
             }
         }
     }
-    
-    func fetchTextMessageForGemini(
-        prompt: String,
-        generateType: TextGenerateType,
-        apiKey: String,
-        completion: @escaping @Sendable (Result<GeminiTextGenerateModel, NetworkError>) -> Void
-    ) {
-        let request = EndpointType.prepareRequestURL(.textGeneratorGemini(prompt: prompt, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            networkManager.sendRequest(request: successRequest, T: GeminiTextGenerateModel.self, completion: completion)
-        case .failure(let error):
-            DispatchQueue.main.async {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    func fetchTextMessageForGPTPublisher(
+
+    func fetchTextMessagePublisher(
         rules: String?,
         prompt: String,
-        generateType: TextGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GPTAnalyzeResponseModel, NetworkError> {
-        let request = EndpointType.prepareRequestURL(.textGeneratorGPT(promptRules: rules, prompt: prompt, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            return networkManager
-                .sendRequestPublisher(request: successRequest, T: GPTAnalyzeResponseModel.self)
-        case .failure(let error):
-            return Fail(error: error)
+        apiKey: String,
+        generateType: TextGenerateType
+    ) -> AnyPublisher<String, NetworkError> {
+        switch generateType {
+        case .gpt:
+            return sendPublisher(.textGeneratorGPT(promptRules: rules, prompt: prompt, apiKey: apiKey), as: GPTAnalyzeResponseModel.self)
+                .map { $0.output.first?.content?.first?.text ?? "" }
+                .eraseToAnyPublisher()
+        case .gemini:
+            return sendPublisher(.textGeneratorGemini(prompt: prompt, apiKey: apiKey), as: GeminiTextGenerateModel.self)
+                .map { $0.candidates.first?.content.parts.first?.text ?? "" }
+                .eraseToAnyPublisher()
+        case .claude:
+            return sendPublisher(.textGeneratorClaude(promptRules: rules, prompt: prompt, apiKey: apiKey), as: ClaudeGenerateModel.self)
+                .map { $0.content.first?.text ?? "" }
                 .eraseToAnyPublisher()
         }
     }
-    
-    func fetchTextMessageForGeminiPublisher(
-        prompt: String,
-        generateType: TextGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GeminiTextGenerateModel, NetworkError> {
-        let request = EndpointType.prepareRequestURL(.textGeneratorGemini(prompt: prompt, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            return networkManager
-                .sendRequestPublisher(request: successRequest, T: GeminiTextGenerateModel.self)
+}
+
+// MARK: - Private Helpers
+
+private extension TextGenerateService {
+    func send<T: Codable & Sendable>(
+        _ endpoint: EndpointType,
+        as type: T.Type,
+        completion: @escaping (Result<T, NetworkError>) -> Void
+    ) {
+        switch EndpointType.prepareRequestURL(endpoint) {
+        case .success(let request):
+            networkManager.sendRequest(request: request, T: type, completion: completion)
         case .failure(let error):
-            return Fail(error: error)
-                .eraseToAnyPublisher()
+            completion(.failure(error))
+        }
+    }
+
+    func sendPublisher<T: Codable>(
+        _ endpoint: EndpointType,
+        as type: T.Type
+    ) -> AnyPublisher<T, NetworkError> {
+        switch EndpointType.prepareRequestURL(endpoint) {
+        case .success(let request):
+            return networkManager.sendRequestPublisher(request: request, T: type)
+        case .failure(let error):
+            return Fail(error: error).eraseToAnyPublisher()
         }
     }
 }

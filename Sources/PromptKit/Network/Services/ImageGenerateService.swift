@@ -11,55 +11,40 @@ import Foundation
 // MARK: - ImageGenerateServiceProtocol
 
 protocol ImageGenerateServiceProtocol {
-    func fetchImageAnalyzeForGemini(
-        prompt: String,
+    func fetchImageAnalyze(
+        rules: String,
         imageData: Data,
-        generateType: ImageGenerateType,
         apiKey: String,
-        completion: @escaping (Result<GeminiImageGenerateModel, NetworkError>) -> Void
+        analyzeType: ImageAnalyzeType,
+        completion: @escaping (Result<String, NetworkError>) -> Void
     )
-    
-    func fetchGeneratedImageForGpt(
-        prompt: String,
-        generateType: ImageGenerateType,
+
+    func fetchImageAnalyzePublisher(
+        rules: String,
+        imageData: Data,
         apiKey: String,
+        analyzeType: ImageAnalyzeType
+    ) -> AnyPublisher<String, NetworkError>
+
+    func fetchGeneratedImage(
+        prompt: String,
+        apiKey: String,
+        generateType: ImageGenerateType,
         completion: @escaping (Result<Data, NetworkError>) -> Void
     )
-    
-    func fetchImageAnalyzeForGpt(
-        rules: String,
-        imageData: Data,
-        generateType: ImageGenerateType,
+
+    func fetchGeneratedImagePublisher(
+        prompt: String,
         apiKey: String,
-        completion: @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
-    )
-    
-    func fetchImageAnalyzeForGeminiPublisher(
-        prompt: String,
-        imageData: Data,
-        generateType: ImageGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GeminiImageGenerateModel, NetworkError>
-    
-    func fetchGeneratedImageForGPTPublisher(
-        prompt: String,
-        generateType: ImageGenerateType,
-        apiKey: String
+        generateType: ImageGenerateType
     ) -> AnyPublisher<Data, NetworkError>
-    
-    func fetchImageAnalyzeForGPTPublisher(
-        rules: String,
-        imageData: Data,
-        generateType: ImageGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GPTAnalyzeResponseModel, NetworkError>
 }
 
 // MARK: - ImageGenerateService
 
 class ImageGenerateService {
     private let networkManager: NetworkManagerProtocol
-    
+
     init(networkManager: NetworkManagerProtocol = NetworkManager(session: .init(configuration: .default))) {
         self.networkManager = networkManager
     }
@@ -68,114 +53,128 @@ class ImageGenerateService {
 // MARK: - ImageGenerateServiceProtocol Methods
 
 extension ImageGenerateService: ImageGenerateServiceProtocol {
-    
-    func fetchImageAnalyzeForGemini(
-        prompt: String,
+    func fetchImageAnalyze(
+        rules: String,
         imageData: Data,
-        generateType: ImageGenerateType,
         apiKey: String,
-        completion: @escaping (Result<GeminiImageGenerateModel, NetworkError>) -> Void
+        analyzeType: ImageAnalyzeType,
+        completion: @escaping (Result<String, NetworkError>) -> Void
     ) {
-        let request = EndpointType.prepareRequestURL(.imageAnalyzerGemini(prompt: prompt, imageData: imageData, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            networkManager.sendRequest(request: successRequest, T: GeminiImageGenerateModel.self, completion: completion)
-        case .failure(let error):
-            DispatchQueue.main.async {
-                completion(.failure(error))
+        switch analyzeType {
+        case .gpt:
+            send(.imageAnalyzerGPT(promptRules: rules, imageData: imageData, apiKey: apiKey), as: GPTAnalyzeResponseModel.self) { result in
+                completion(result.map { $0.output.first?.content?.first?.text ?? "" })
+            }
+        case .gemini:
+            send(.imageAnalyzerGemini(promptRules: rules, imageData: imageData, apiKey: apiKey), as: GeminiTextGenerateModel.self) { result in
+                completion(result.map { $0.candidates.first?.content.parts.first?.text ?? "" })
+            }
+        case .claude:
+            send(.imageAnalyzerClaude(promptRules: rules, imageData: imageData, apiKey: apiKey), as: ClaudeGenerateModel.self) { result in
+                completion(result.map { $0.content.first?.text ?? "" })
             }
         }
     }
-    
-    func fetchGeneratedImageForGpt(
-        prompt: String,
-        generateType: ImageGenerateType,
+
+    func fetchImageAnalyzePublisher(
+        rules: String,
+        imageData: Data,
         apiKey: String,
+        analyzeType: ImageAnalyzeType
+    ) -> AnyPublisher<String, NetworkError> {
+        switch analyzeType {
+        case .gpt:
+            return sendPublisher(.imageAnalyzerGPT(promptRules: rules, imageData: imageData, apiKey: apiKey), as: GPTAnalyzeResponseModel.self)
+                .map { $0.output.first?.content?.first?.text ?? "" }
+                .eraseToAnyPublisher()
+        case .gemini:
+            return sendPublisher(.imageAnalyzerGemini(promptRules: rules, imageData: imageData, apiKey: apiKey), as: GeminiTextGenerateModel.self)
+                .map { $0.candidates.first?.content.parts.first?.text ?? "" }
+                .eraseToAnyPublisher()
+        case .claude:
+            return sendPublisher(.imageAnalyzerClaude(promptRules: rules, imageData: imageData, apiKey: apiKey), as: ClaudeGenerateModel.self)
+                .map { $0.content.first?.text ?? "" }
+                .eraseToAnyPublisher()
+        }
+    }
+
+    func fetchGeneratedImage(
+        prompt: String,
+        apiKey: String,
+        generateType: ImageGenerateType,
         completion: @escaping (Result<Data, NetworkError>) -> Void
     ) {
-        let request = EndpointType.prepareRequestURL(.imageGeneratorGPT(prompt: prompt, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            networkManager.sendRequest(request: successRequest, T: Data.self, completion: completion)
-        case .failure(let error):
-            DispatchQueue.main.async {
-                completion(.failure(error))
+        switch generateType {
+        case .gpt:
+            send(.imageGeneratorGPT(prompt: prompt, apiKey: apiKey), as: GPTImageGenerateResponseModel.self) { result in
+                switch result {
+                case .success(let response):
+                    guard
+                        let b64String = response.data.first?.b64_json,
+                        let imageData = Data(base64Encoded: b64String)
+                    else {
+                        return completion(.failure(.decodingFailedError))
+                    }
+                    completion(.success(imageData))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
             }
+        case .gemini:
+            completion(.failure(.requestFailedError))
         }
     }
-    
-    func fetchImageAnalyzeForGpt(
-        rules: String,
-        imageData: Data,
-        generateType: ImageGenerateType,
+
+    func fetchGeneratedImagePublisher(
+        prompt: String,
         apiKey: String,
-        completion: @escaping (Result<GPTAnalyzeResponseModel, NetworkError>) -> Void
-    ) {
-        let request = EndpointType.prepareRequestURL(.imageAnalyzerGPT(promptRules: rules, imageData: imageData, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            return networkManager
-                .sendRequest(request: successRequest, T: GPTAnalyzeResponseModel.self, completion: completion)
-        case .failure(let error):
-            DispatchQueue.main.async {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    func fetchImageAnalyzeForGeminiPublisher(
-        prompt: String,
-        imageData: Data,
-        generateType: ImageGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GeminiImageGenerateModel, NetworkError> {
-        let request = EndpointType.prepareRequestURL(.imageAnalyzerGemini(prompt: prompt, imageData: imageData, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            return networkManager
-                .sendRequestPublisher(request: successRequest, T: GeminiImageGenerateModel.self)
-        case .failure(let error):
-            return Fail(error: error)
-                .eraseToAnyPublisher()
-        }
-    }
-    
-    func fetchGeneratedImageForGPTPublisher(
-        prompt: String,
-        generateType: ImageGenerateType,
-        apiKey: String
+        generateType: ImageGenerateType
     ) -> AnyPublisher<Data, NetworkError> {
-        let request = EndpointType.prepareRequestURL(.imageGeneratorGPT(prompt: prompt, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            return networkManager
-                .sendRequestPublisher(request: successRequest, T: Data.self)
-        case .failure(let error):
-            return Fail(error: error)
+        switch generateType {
+        case .gpt:
+            return sendPublisher(.imageGeneratorGPT(prompt: prompt, apiKey: apiKey), as: GPTImageGenerateResponseModel.self)
+                .tryMap { response -> Data in
+                    guard
+                        let b64String = response.data.first?.b64_json,
+                        let imageData = Data(base64Encoded: b64String)
+                    else {
+                        throw NetworkError.decodingFailedError
+                    }
+                    return imageData
+                }
+                .mapError { ($0 as? NetworkError) ?? .requestFailedError }
                 .eraseToAnyPublisher()
+        case .gemini:
+            return Fail(error: .requestFailedError).eraseToAnyPublisher()
         }
     }
-    
-    func fetchImageAnalyzeForGPTPublisher(
-        rules: String,
-        imageData: Data,
-        generateType: ImageGenerateType,
-        apiKey: String
-    ) -> AnyPublisher<GPTAnalyzeResponseModel, NetworkError> {
-        let request = EndpointType.prepareRequestURL(.imageAnalyzerGPT(promptRules: rules, imageData: imageData, apiKey: apiKey))
-        
-        switch request {
-        case .success(let successRequest):
-            return networkManager
-                .sendRequestPublisher(request: successRequest, T: GPTAnalyzeResponseModel.self)
+}
+
+// MARK: - Private Helpers
+
+private extension ImageGenerateService {
+    func send<T: Codable & Sendable>(
+        _ endpoint: EndpointType,
+        as type: T.Type,
+        completion: @escaping (Result<T, NetworkError>) -> Void
+    ) {
+        switch EndpointType.prepareRequestURL(endpoint) {
+        case .success(let request):
+            networkManager.sendRequest(request: request, T: type, completion: completion)
         case .failure(let error):
-            return Fail(error: error)
-                .eraseToAnyPublisher()
+            completion(.failure(error))
+        }
+    }
+
+    func sendPublisher<T: Codable>(
+        _ endpoint: EndpointType,
+        as type: T.Type
+    ) -> AnyPublisher<T, NetworkError> {
+        switch EndpointType.prepareRequestURL(endpoint) {
+        case .success(let request):
+            return networkManager.sendRequestPublisher(request: request, T: type)
+        case .failure(let error):
+            return Fail(error: error).eraseToAnyPublisher()
         }
     }
 }

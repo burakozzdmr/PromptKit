@@ -25,7 +25,7 @@ public enum EndpointType {
     case imageAnalyzerGPT(promptRules: String?, imageData: Data, apiKey: String)
     case imageGeneratorGPT(prompt: String, apiKey: String)
     case textGeneratorGemini(prompt: String, apiKey: String)
-    case imageAnalyzerGemini(prompt: String, imageData: Data, apiKey: String)
+    case imageAnalyzerGemini(promptRules: String, imageData: Data, apiKey: String)
     case textGeneratorClaude(promptRules: String?, prompt: String, apiKey: String)
     case imageAnalyzerClaude(promptRules: String?, imageData: Data, apiKey: String)
 }
@@ -63,7 +63,8 @@ public extension EndpointType {
 
     var queryItems: [URLQueryItem]? {
         switch self {
-        case .textGeneratorGemini(_, let apiKey):
+        case .textGeneratorGemini(_, let apiKey),
+             .imageAnalyzerGemini(_, _, let apiKey):
             return [URLQueryItem(name: "key", value: apiKey)]
         default:
             return nil
@@ -90,8 +91,7 @@ public extension EndpointType {
                 instructions: rules ?? "",
                 input: prompt
             )
-            let request = makeRequest(url: requestURL, auth: .bearer(apiKey: apiKey), body: body)
-            return .success(request)
+            return .success(makeRequest(url: requestURL, auth: .bearer(apiKey: apiKey), body: body))
 
         case .imageAnalyzerGPT(let rules, let imageData, let apiKey):
             let base64Image = "data:image/jpeg;base64,\(imageData.base64EncodedString())"
@@ -111,8 +111,7 @@ public extension EndpointType {
                     )
                 ]
             )
-            let request = makeRequest(url: requestURL, auth: .bearer(apiKey: apiKey), body: body)
-            return .success(request)
+            return .success(makeRequest(url: requestURL, auth: .bearer(apiKey: apiKey), body: body))
 
         case .imageGeneratorGPT(let prompt, let apiKey):
             let body = GPTImageGenerateRequestModel(
@@ -121,9 +120,7 @@ public extension EndpointType {
                 n: 1,
                 size: "1024x1024"
             )
-            
-            let request = makeRequest(url: requestURL, auth: .bearer(apiKey: apiKey), body: body)
-            return .success(request)
+            return .success(makeRequest(url: requestURL, auth: .bearer(apiKey: apiKey), body: body))
 
         case .textGeneratorGemini(let prompt, _):
             let body = GeminiTextGenerateRequestModel(
@@ -133,9 +130,26 @@ public extension EndpointType {
                     )
                 ]
             )
-            
-            let request = makeRequest(url: requestURL, auth: .none, body: body)
-            return .success(request)
+            return .success(makeRequest(url: requestURL, auth: .none, body: body))
+
+        case .imageAnalyzerGemini(let promptRules, let imageData, _):
+            let body = GeminiTextGenerateRequestModel(
+                contents: [
+                    GeminiTextGenerateRequestModel.Content(
+                        parts: [
+                            GeminiTextGenerateRequestModel.Content.Part(text: promptRules, inlineData: nil),
+                            GeminiTextGenerateRequestModel.Content.Part(
+                                text: nil,
+                                inlineData: GeminiTextGenerateRequestModel.Content.Part.InlineData(
+                                    mimeType: "image/jpeg",
+                                    data: imageData.base64EncodedString()
+                                )
+                            )
+                        ]
+                    )
+                ]
+            )
+            return .success(makeRequest(url: requestURL, auth: .none, body: body))
 
         case .textGeneratorClaude(let rules, let prompt, let apiKey):
             let userContent = rules.map { "\($0)\n\(prompt)" } ?? prompt
@@ -149,9 +163,7 @@ public extension EndpointType {
                     )
                 ]
             )
-            
-            let request = makeRequest(url: requestURL, auth: .claude(apiKey: apiKey), body: body)
-            return .success(request)
+            return .success(makeRequest(url: requestURL, auth: .claude(apiKey: apiKey), body: body))
 
         case .imageAnalyzerClaude(let rules, let imageData, let apiKey):
             var messageContent: [ClaudeImageAnalyzeRequestModel.ClaudeMessage.Content] = [
@@ -182,20 +194,7 @@ public extension EndpointType {
                     )
                 ]
             )
-            
-            let request = makeRequest(url: requestURL, auth: .claude(apiKey: apiKey), body: body)
-            return .success(request)
-        case .imageAnalyzerGemini(prompt: let prompt, imageData: let imageData, apiKey: let apiKey):
-            let body = GeminiTextGenerateRequestModel(
-                contents: [
-                    GeminiTextGenerateRequestModel.Content(
-                        parts: [GeminiTextGenerateRequestModel.Content.Part(text: prompt, inlineData: nil)]
-                    )
-                ]
-            )
-            
-            let request = makeRequest(url: requestURL, auth: .none, body: body)
-            return .success(request)
+            return .success(makeRequest(url: requestURL, auth: .claude(apiKey: apiKey), body: body))
         }
     }
 }
