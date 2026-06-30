@@ -5,38 +5,58 @@
 //  Created by Burak Özdemir on 1.08.2025.
 //
 
+import Combine
 import Foundation
+
+// MARK: - ImageGenerator
 
 public class ImageGenerator {
     private let prompt: String
-    private let generateType: ImageGenerateType
     private let apiKey: String
+    private let generateType: ImageGenerateType
     private let imageGenerateService: ImageGenerateServiceProtocol
-    
-    init(
+
+    public init(
         prompt: String,
-        generateType: ImageGenerateType,
         apiKey: String,
-        imageGenerateService: ImageGenerateServiceProtocol = ImageGenerateService()
+        generateType: ImageGenerateType
     ) {
         self.prompt = prompt
-        self.generateType = generateType
         self.apiKey = apiKey
+        self.generateType = generateType
+        self.imageGenerateService = ImageGenerateService()
+    }
+
+    init(
+        prompt: String,
+        apiKey: String,
+        generateType: ImageGenerateType,
+        imageGenerateService: ImageGenerateServiceProtocol
+    ) {
+        self.prompt = prompt
+        self.apiKey = apiKey
+        self.generateType = generateType
         self.imageGenerateService = imageGenerateService
     }
 }
 
-// MARK: - Publics
+// MARK: - Public Methods
 
 public extension ImageGenerator {
-    func fetchGeneratedImage(completion: @Sendable @escaping (Result<Data, NetworkError>) -> Void) {
-        imageGenerateService.fetchGeneratedImageForGpt(prompt: prompt, generateType: generateType, apiKey: apiKey) { imageResult in
-            switch imageResult {
-            case .success(let imageData):
-                completion(.success(imageData))
-            case .failure(let errorType):
-                completion(.failure(errorType))
-            }
-        }
+    func fetchGeneratedImage(completion: @escaping (Result<Data, NetworkError>) -> Void) {
+        imageGenerateService.fetchGeneratedImage(
+            prompt: prompt,
+            apiKey: apiKey,
+            generateType: generateType,
+            completion: completion
+        )
+    }
+
+    func fetchGeneratedImagePublisher() -> AnyPublisher<Data, NetworkError> {
+        imageGenerateService.fetchGeneratedImagePublisher(
+            prompt: prompt,
+            apiKey: apiKey,
+            generateType: generateType
+        )
     }
 }
